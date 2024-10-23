@@ -23,9 +23,11 @@ const SetMedicationReminderIntentHandler = {
                Alexa.getIntentName(handlerInput.requestEnvelope) === 'SetMedicationReminderIntent';
     },
     handle(handlerInput) {
+    
     const medication = handlerInput.requestEnvelope.request.intent.slots.medication.value;
+    handlerInput.attributesManager.setSessionAttributes({ "medication": medication });
 	
-        const speechText = `Perfeito! Vou te lembrar de tomar ${medication}. Qual o horário você quer ser lembrado de tomar ${medication}`;
+        const speechText = `Perfeito! Vou te lembrar de tomar ${medication}. Qual a dosagem de ${medication}?`;
 
         return handlerInput.responseBuilder
             .speak(speechText)
@@ -34,19 +36,44 @@ const SetMedicationReminderIntentHandler = {
     }
 };
 
-// Handler para criar o lembrete do medicamento 
-const CreateReminderIntentHandler = {
+const InformDosageMedicationIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
-               Alexa.getIntentName(handlerInput.requestEnvelope) === 'CreateReminderIntent';
+               Alexa.getIntentName(handlerInput.requestEnvelope) === 'InformDosageMedicationIntent';
     },
     handle(handlerInput) {
-    const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
-
-        const speechText = `Ok, lembrete criado para ${time}`;
+    
+    const dosage = handlerInput.requestEnvelope.request.intent.slots.dosage.value;
+    
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const medication = sessionAttributes.medication;
+    
+        const speechText = `Ok! Dosagem de ${medication} ajustada para ${dosage}. Qual horário você quer ser lembrado de tomar ${medication}? `;
 
         return handlerInput.responseBuilder
             .speak(speechText)
+            .reprompt()
+            .getResponse();
+    }
+};
+
+
+// Handler para criar o lembrete do medicamento 
+const CreateReminderIntentHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'CreateReminderIntent';
+    },
+    async handle(handlerInput) {
+        const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const medication = sessionAttributes.medication;
+        
+        // Simulando a criação do lembrete no console de desenvolvimento
+        const speakOutput = `Vou te lembrar de tomar sua ${medication} às ${time}.`;
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
             .getResponse();
     }
 };
@@ -75,7 +102,8 @@ exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
         CreateReminderIntentHandler,
-        SetMedicationReminderIntentHandler
+        SetMedicationReminderIntentHandler,
+        InformDosageMedicationIntentHandler
     )
     .withApiClient(new Alexa.DefaultApiClient())
     .addErrorHandlers(ErrorHandler)
