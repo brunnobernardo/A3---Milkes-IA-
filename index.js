@@ -1,8 +1,7 @@
-// Código teste básico sobre a skill
-
 const Alexa = require('ask-sdk-core');
 
 // Handler para iniciar a interação
+
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
@@ -16,58 +15,42 @@ const LaunchRequestHandler = {
     }
 };
 
-// Handler para configurar o lembrete sem horário
+
+// Handler para configurar o medicamento
 const SetMedicationReminderIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
                Alexa.getIntentName(handlerInput.requestEnvelope) === 'SetMedicationReminderIntent';
     },
-    async handle(handlerInput) {
-        const medication = handlerInput.requestEnvelope.request.intent.slots.Medication.value;
+    handle(handlerInput) {
+    const medication = handlerInput.requestEnvelope.request.intent.slots.medication.value;
+	
+        const speechText = `Perfeito! Vou te lembrar de tomar ${medication}. Qual o horário você quer ser lembrado de tomar ${medication}`;
 
-        if (!medication) {
-            return handlerInput.responseBuilder
-                .speak('Desculpe, não entendi o nome do medicamento. Pode repetir?')
-                .reprompt('Por favor, diga o nome do remédio.')
-                .getResponse();
-        }
+        return handlerInput.responseBuilder
+            .speak(speechText)
+            .reprompt()
+            .getResponse();
+    }
+};
 
-        const speechText = `Perfeito! Vou te lembrar de tomar seu ${medication}.`;
+// Handler para criar o lembrete do medicamento 
+const CreateReminderIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+               Alexa.getIntentName(handlerInput.requestEnvelope) === 'CreateReminderIntent';
+    },
+    handle(handlerInput) {
+    const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
 
-        // Aqui você pode configurar um lembrete genérico, como por exemplo, diariamente em um horário fixo
-        const reminderRequest = {
-            trigger: {
-                type: 'SCHEDULED_RELATIVE',
-                offsetInSeconds: 60, // Lembrete para daqui a 1 minuto como exemplo
-            },
-            alertInfo: {
-                spokenInfo: {
-                    content: [{
-                        locale: 'pt-BR',
-                        text: `Está na hora de tomar seu ${medication}. Lembre-se de cuidar da sua saúde!`
-                    }]
-                }
-            },
-            pushNotification: {
-                status: 'ENABLED'
-            }
-        };
-
-        try {
-            const client = handlerInput.serviceClientFactory.getReminderManagementServiceClient();
-            await client.createReminder(reminderRequest);
-        } catch (error) {
-            console.log(`Erro ao configurar o lembrete: ${error}`);
-            return handlerInput.responseBuilder
-                .speak('Desculpe, algo deu errado ao configurar o lembrete. Tente novamente.')
-                .getResponse();
-        }
+        const speechText = `Ok, lembrete criado para ${time}`;
 
         return handlerInput.responseBuilder
             .speak(speechText)
             .getResponse();
     }
 };
+
 
 // Handler para erros
 const ErrorHandler = {
@@ -76,17 +59,22 @@ const ErrorHandler = {
     },
     handle(handlerInput, error) {
         console.log(`Erro encontrado: ${error.message}`);
-        const speechText = 'Desculpe, ocorreu um erro. Tente novamente.';
+        
+        const speechText = 'Ocorreu um erro, diga novamente o nome do seu remédio';
+    
         return handlerInput.responseBuilder
-            .speak(speechText)
+            .speak(speechText)           // Fala que informa o erro
+            .reprompt()       // Reprompt para manter a sessão ativa
             .getResponse();
     }
 };
+
 
 // Configuração do Lambda
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
+        CreateReminderIntentHandler,
         SetMedicationReminderIntentHandler
     )
     .withApiClient(new Alexa.DefaultApiClient())
