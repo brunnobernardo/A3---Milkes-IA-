@@ -48,10 +48,30 @@ const InformDosageMedicationIntentHandler = {
     const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
     const medication = sessionAttributes.medication;
     
-        const speechText = `Ok! Dosagem de ${medication} ajustada para ${dosage}. Qual horário você quer ser lembrado de tomar ${medication}? `;
+        const speechText = `Ok! Dosagem de ${medication} ajustada para ${dosage}. Qual a frequência que você irá tomar ${medication}? `;
 
         return handlerInput.responseBuilder
             .speak(speechText)
+            .reprompt()
+            .getResponse();
+    }
+};
+
+const MedicationFrequencyIntentHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'MedicationFrequencyIntent';
+    },
+    async handle(handlerInput) {
+        const frequency = handlerInput.requestEnvelope.request.intent.slots.frequency.value;
+        
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const medication = sessionAttributes.medication;
+        
+            const speakOutput = `Ok, vou te lembrar de tomar ${medication} ${frequency}. Qual horário te lembrar?`;
+        
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
             .reprompt()
             .getResponse();
     }
@@ -66,12 +86,14 @@ const CreateReminderIntentHandler = {
     },
     async handle(handlerInput) {
         const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
+        const timeTwo = handlerInput.requestEnvelope.request.intent.slots.timeTwo.value;
+        const timeThree = handlerInput.requestEnvelope.request.intent.slots.timeThree.value;
+        
         const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
         const medication = sessionAttributes.medication;
         
-        // Simulando a criação do lembrete no console de desenvolvimento
-        const speakOutput = `Vou te lembrar de tomar sua ${medication} às ${time}.`;
-
+            const speakOutput = `Agendado, vou te lembrar de tomar ${medication} na frequência e horário solicitado.`;
+        
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .getResponse();
@@ -103,7 +125,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         LaunchRequestHandler,
         CreateReminderIntentHandler,
         SetMedicationReminderIntentHandler,
-        InformDosageMedicationIntentHandler
+        InformDosageMedicationIntentHandler,
+        MedicationFrequencyIntentHandler
     )
     .withApiClient(new Alexa.DefaultApiClient())
     .addErrorHandlers(ErrorHandler)
