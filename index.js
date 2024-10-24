@@ -7,7 +7,7 @@ const LaunchRequestHandler = {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
     handle(handlerInput) {
-        const speechText = 'Olá! Vou te ajudar a lembrar de tomar seu remédio. Qual o nome do remédio que você está tomando?';
+        const speechText = 'Olá! Como vai? Vou te ajudar a lembrar de tomar seu remédio. Qual o nome do remédio que você está tomando?';
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(speechText)
@@ -92,13 +92,33 @@ const CreateReminderIntentHandler = {
         const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
         const medication = sessionAttributes.medication;
         
-            const speakOutput = `Agendado, vou te lembrar de tomar ${medication} na frequência e horário solicitado.`;
+            const speakOutput = `Agendado, vou te lembrar de tomar ${medication} na frequência e horário solicitado. Me avise quando tomar ${medication}... Me preocupo com a sua saúde, fique bem!`;
+            
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt()
+            .getResponse();
+    }
+};
+
+const FeedbackIntentHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'FeedbackIntent';
+    },
+    handle(handlerInput) {
+
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const medication = sessionAttributes.medication;
+        
+        const speakOutput = `Muito bem, ótimo trabalho! Sua saúde agradece! Até a próxima `;
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .getResponse();
     }
 };
+
 
 
 // Handler para erros
@@ -126,7 +146,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         CreateReminderIntentHandler,
         SetMedicationReminderIntentHandler,
         InformDosageMedicationIntentHandler,
-        MedicationFrequencyIntentHandler
+        MedicationFrequencyIntentHandler,
+        FeedbackIntentHandler
     )
     .withApiClient(new Alexa.DefaultApiClient())
     .addErrorHandlers(ErrorHandler)
