@@ -68,7 +68,7 @@ const MedicationFrequencyIntentHandler = {
         const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
         const medication = sessionAttributes.medication;
         
-            const speakOutput = `Ok, vou te lembrar de tomar ${medication} ${frequency}. Qual horário te lembrar?`;
+            const speakOutput = `Ok, vou te lembrar de tomar ${medication} a cada ${frequency}. Qual o primeiro horário você irá tomar essa medicação`;
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
