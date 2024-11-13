@@ -10,7 +10,7 @@ const LaunchRequestHandler = {
         const speechText = 'Olá! Como vai? Vou te ajudar a lembrar de tomar seu remédio. Qual o nome do remédio que você está tomando?';
         return handlerInput.responseBuilder
             .speak(speechText)
-            .reprompt(speechText)
+            .reprompt()
             .getResponse();
     }
 };
@@ -86,13 +86,11 @@ const CreateReminderIntentHandler = {
     },
     async handle(handlerInput) {
         const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
-        const timeTwo = handlerInput.requestEnvelope.request.intent.slots.timeTwo.value;
-        const timeThree = handlerInput.requestEnvelope.request.intent.slots.timeThree.value;
         
         const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
         const medication = sessionAttributes.medication;
         
-            const speakOutput = `Agendado, vou te lembrar de tomar ${medication} na frequência e horário solicitado. Me avise quando tomar ${medication}... Me preocupo com a sua saúde, fique bem!`;
+        const speakOutput = `Agendado, vou te lembrar de tomar ${medication} na frequência e horário solicitado. Me avise quando tomar ${medication}... Me preocupo com a sua saúde, fique bem!`;
             
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -143,12 +141,12 @@ const ErrorHandler = {
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
-        CreateReminderIntentHandler,
         SetMedicationReminderIntentHandler,
         InformDosageMedicationIntentHandler,
         MedicationFrequencyIntentHandler,
-        FeedbackIntentHandler
+        CreateReminderIntentHandler,
+        FeedbackIntentHandler,
     )
-    .withApiClient(new Alexa.DefaultApiClient())
     .addErrorHandlers(ErrorHandler)
+    .withApiClient(new Alexa.DefaultApiClient())
     .lambda();
